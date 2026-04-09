@@ -192,7 +192,10 @@ def send_message(
     thinking_text = ""
     message_id = None
     status = "WIP"
+    # Start as RESPONSE by default; will switch to THINK if thinking chunks come first
     current_type = "RESPONSE"
+    # Track if we have seen any fragment type marker yet
+    fragment_type_seen = False
 
     for line in send_message_stream(
         authorization=authorization,
@@ -221,6 +224,7 @@ def send_message(
         op = chunk.get("o", "APPEND")
         val = chunk.get("v")
 
+        # Handle chunks that have no "p" key — these are full snapshot objects
         if "p" not in chunk and "v" in chunk:
             if isinstance(val, str):
                 response_text, thinking_text = _append_to(current_type, val, response_text, thinking_text)
@@ -232,30 +236,54 @@ def send_message(
                     ftype = frag.get("type", "")
                     if ftype in ("THINK", "THINKING"):
                         current_type = "THINK"
-                    elif ftype in ("RESPONSE",):
+                        fragment_type_seen = True
+                    elif ftype == "RESPONSE":
                         current_type = "RESPONSE"
+                        fragment_type_seen = True
                     content = frag.get("content", "")
                     response_text, thinking_text = _append_to(current_type, content, response_text, thinking_text)
             continue
 
+        # Handle response/fragments APPEND — this sets the fragment type
         if path == "response/fragments" and op == "APPEND":
             frags = val if isinstance(val, list) else [val]
             for frag in frags:
                 ftype = frag.get("type", "")
                 if ftype in ("THINK", "THINKING"):
                     current_type = "THINK"
+                    fragment_type_seen = True
                 elif ftype == "RESPONSE":
                     current_type = "RESPONSE"
+                    fragment_type_seen = True
                 content = frag.get("content", "")
                 response_text, thinking_text = _append_to(current_type, content, response_text, thinking_text)
             continue
 
-        if "fragments/-1/content" in path and isinstance(val, str):
+        # Handle fragment type switches (no content, just type update)
+        if re.match(r"response/fragments/\d+/type$", path) and isinstance(val, str):
+            if val in ("THINK", "THINKING"):
+                current_type = "THINK"
+                fragment_type_seen = True
+            elif val == "RESPONSE":
+                current_type = "RESPONSE"
+                fragment_type_seen = True
+            continue
+
+        # Handle incremental content patches for any fragment index
+        # Pattern: response/fragments/N/content or response/fragments/-1/content
+        if re.match(r"response/fragments/-?\d+/content$", path) and isinstance(val, str):
             response_text, thinking_text = _append_to(current_type, val, response_text, thinking_text)
             continue
 
+        # Handle status updates
         if path == "response/status" and isinstance(val, str):
             status = val
+            continue
+
+        # Handle message_id
+        if path == "response/message_id" and val is not None:
+            message_id = val
+            continue
 
     return {
         "message_id": message_id or 0,
