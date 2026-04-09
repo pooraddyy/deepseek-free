@@ -4,8 +4,8 @@
   <a href="https://t.me/pythontodayz">
     <img src="https://img.shields.io/badge/Telegram-pythontodayz-2CA5E0?logo=telegram&logoColor=white&style=for-the-badge" alt="Telegram Channel"/>
   </a>
-  <img src="https://img.shields.io/pypi/v/deepseek-free?style=for-the-badge" alt="PyPI Version"/>
-  <img src="https://img.shields.io/pypi/pyversions/deepseek-free?style=for-the-badge" alt="Python Versions"/>
+  <img src="https://img.shields.io/pypi/v/p2d-deepseek?style=for-the-badge" alt="PyPI Version"/>
+  <img src="https://img.shields.io/pypi/pyversions/p2d-deepseek?style=for-the-badge" alt="Python Versions"/>
   <img src="https://img.shields.io/github/license/addy/deepseek-free?style=for-the-badge" alt="License"/>
 </p>
 
@@ -16,7 +16,7 @@ Unofficial Python client for DeepSeek. Supports default and expert models with t
 ## Installation
 
 ```bash
-pip install deepseek-free
+pip install p2d-deepseek
 ```
 
 ---
@@ -38,6 +38,11 @@ This is the quickest way if you are on a desktop browser.
 5. Find the key called `userToken`
 6. Copy the **value** field — that is your token
 
+Or paste this directly in the **Console** tab for a one-click copy:
+
+```js
+copy(JSON.parse(localStorage.getItem('userToken')).value)
+```
 
 Your token is now in your clipboard.
 
@@ -63,7 +68,11 @@ Mobile users can extract the token using **Kiwi Browser**, which supports DevToo
 1. Install [Kiwi Browser](https://play.google.com/store/apps/details?id=com.kiwibrowser.browser) from the Play Store
 2. Open [chat.deepseek.com](https://chat.deepseek.com) and log in
 3. Tap the menu (⋮) → **Developer Tools**
-4. Go to the **Console** Find the `authorization` header and copy its value:
+4. Go to the **Console** tab and paste:
+
+```js
+copy(JSON.parse(localStorage.getItem('userToken')).value)
+```
 
 5. The token is copied to your clipboard
 
