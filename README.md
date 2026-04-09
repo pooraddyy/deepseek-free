@@ -30,7 +30,7 @@ pip install p2d-deepseek --upgrade
 **Install specific version:**
 
 ```bash
-pip install p2d-deepseek==0.1.6
+pip install p2d-deepseek==0.1.7
 ```
 
 > **Note:** The PyPI package is named `p2d-deepseek` but the Python import name is `deepseek`.
@@ -46,8 +46,6 @@ To use this package, you need your DeepSeek auth token. Choose whichever method 
 
 ### Method 1 — LocalStorage (Fastest, Desktop)
 
-This is the quickest way if you are on a desktop browser.
-
 1. Go to [chat.deepseek.com](https://chat.deepseek.com) and log in
 2. Open DevTools — press `F12` or right-click anywhere → **Inspect**
 3. Go to the **Application** tab (if hidden, click `»` to find it)
@@ -59,8 +57,6 @@ This is the quickest way if you are on a desktop browser.
 
 ### Method 2 — Network Tab (Desktop)
 
-Use this if the LocalStorage method does not work for you.
-
 1. Go to [chat.deepseek.com](https://chat.deepseek.com) and log in
 2. Open DevTools → **Network** tab
 3. Send any message in the chat
@@ -71,8 +67,6 @@ Use this if the LocalStorage method does not work for you.
 ---
 
 ### Method 3 — Kiwi Browser (Android / Mobile)
-
-Mobile users can extract the token using **Kiwi Browser**, which supports DevTools.
 
 1. Install [Kiwi Browser](https://play.google.com/store/apps/details?id=com.kiwibrowser.browser) from the Play Store
 2. Open [chat.deepseek.com](https://chat.deepseek.com) and log in
@@ -86,14 +80,14 @@ Mobile users can extract the token using **Kiwi Browser**, which supports DevToo
 
 ### Cloudflare Issues
 
-If you see a **"Just a moment..."** page or requests are being blocked, DeepSeek has triggered a Cloudflare challenge. In this case:
+If you see a **"Just a moment..."** page or requests are being blocked:
 
 - Try logging out and back in on [chat.deepseek.com](https://chat.deepseek.com)
 - Wait a few minutes, then grab a fresh token
 - If the problem keeps happening, switch to a different network (e.g. mobile data vs Wi-Fi)
-- Avoid making too many requests in a short time — space them out to stay under the radar
+- Avoid making too many requests in a short time
 
-> Your token is tied to your session. If DeepSeek logs you out or your session expires, just repeat any of the steps above to get a fresh one.
+> Your token is tied to your session. If DeepSeek logs you out or your session expires, repeat any of the steps above to get a fresh one.
 
 ---
 
@@ -130,6 +124,71 @@ print(response.response)
 
 ---
 
+## Response Fields
+
+Every `client.chat()` call returns a `ChatResponse` object with these fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `response` | `str` | Clean final answer from the model |
+| `thinking_content` | `str \| None` | Raw thinking process (only when `thinking=True`, else `None`) |
+| `full_response` | `str` | **Thinking first + answer below** — use this in bots when thinking is enabled |
+| `answer` | `str` | Same as `response` — clean final answer only |
+| `session_id` | `str` | Session ID — use to continue conversations |
+| `message_id` | `int` | Message ID in the session |
+| `model_type` | `str` | Model used (`default` or `expert`) |
+| `thinking_enabled` | `bool` | Whether thinking was enabled |
+| `search_enabled` | `bool` | Whether web search was enabled |
+| `status` | `str` | Response status from DeepSeek |
+
+---
+
+## Thinking Mode — Important
+
+When `thinking=True`, the model shows its internal reasoning before giving the final answer.
+
+### Which field to use?
+
+```python
+response = client.chat("What is 17 * 23?", thinking=True)
+
+response.response          # "391"  ← just the clean answer
+response.thinking_content  # "We need to compute 17 * 23..."  ← just the thinking
+response.full_response     # thinking first + answer below (combined in one string)
+```
+
+### In a bot — always use `full_response`
+
+```python
+response = client.chat(user_message, thinking=True)
+
+# WRONG — sends two separate messages, thinking appears twice
+await message.reply(response.response)
+await message.reply(response.thinking_content)
+
+# CORRECT — one message, thinking first, answer below
+await message.reply(response.full_response)
+```
+
+### Without thinking — use `response`
+
+```python
+response = client.chat(user_message)  # thinking=False by default
+
+await message.reply(response.response)  # just the clean answer, nothing else
+```
+
+### `full_response` when thinking is disabled
+
+If `thinking=False`, `full_response` returns the same thing as `response` — no thinking content, just the clean answer. So you can safely always use `full_response` and it will work correctly in both cases.
+
+```python
+# Works correctly whether thinking=True or thinking=False
+await message.reply(response.full_response)
+```
+
+---
+
 ## Usage Examples
 
 ### Basic — default model
@@ -160,11 +219,12 @@ response = client.chat(
     "What is 17 * 23?",
     thinking=True
 )
-print(response.response)
 
-if response.thinking_content:
-    print("\n--- Thinking ---")
-    print(response.thinking_content)
+print(response.full_response)
+# Output:
+# We need to compute 17 * 23. 17*20=340, 17*3=51, total is 391.
+#
+# 17 multiplied by 23 equals 391.
 ```
 
 ### Web search enabled
@@ -185,7 +245,7 @@ response = client.chat(
     model="expert",
     thinking=True
 )
-print(response.response)
+print(response.full_response)
 ```
 
 ### Expert + web search
@@ -207,7 +267,7 @@ response = client.chat(
     thinking=True,
     search=True
 )
-print(response.response)
+print(response.full_response)
 ```
 
 ### Expert + thinking + web search (all enabled)
@@ -219,11 +279,7 @@ response = client.chat(
     thinking=True,
     search=True
 )
-print(response.response)
-
-if response.thinking_content:
-    print("\n--- Thinking Process ---")
-    print(response.thinking_content)
+print(response.full_response)
 ```
 
 ### Continue a conversation (reuse session)
@@ -238,20 +294,128 @@ print(response2.response)
 
 ---
 
-## Response Object
+## Error Handling
 
-Every `client.chat()` call returns a `ChatResponse`:
+```python
+from deepseek import DeepSeekClient, DeepSeekConnectionError, DeepSeekAPIError
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `response` | `str` | The model's reply (clean plain text) |
-| `thinking_content` | `str \| None` | Chain-of-thought (only when `thinking=True`) |
-| `session_id` | `str` | Session ID — use to continue conversations |
-| `message_id` | `int` | Message ID in the session |
-| `model_type` | `str` | Model used (`default` or `expert`) |
-| `thinking_enabled` | `bool` | Whether thinking was enabled |
-| `search_enabled` | `bool` | Whether web search was enabled |
-| `status` | `str` | Response status from DeepSeek |
+client = DeepSeekClient(api_key="YOUR_TOKEN_HERE")
+
+try:
+    response = client.chat("Hello!")
+    print(response.response)
+except DeepSeekConnectionError as e:
+    print(f"Connection failed: {e}")
+except DeepSeekAPIError as e:
+    print(f"API error: {e}")
+```
+
+| Exception | When it happens |
+|-----------|----------------|
+| `DeepSeekConnectionError` | Cannot connect to DeepSeek (network issue) |
+| `DeepSeekAPIError` | Token expired/invalid, or DeepSeek returned an error |
+
+---
+
+## Demo Script
+
+Save this as `demo.py` and run it with your token:
+
+```python
+from deepseek import DeepSeekClient, DeepSeekConnectionError, DeepSeekAPIError
+
+TOKEN = "YOUR_TOKEN_HERE"
+
+client = DeepSeekClient(api_key=TOKEN)
+
+print("=" * 50)
+print("Test 1: Basic chat")
+print("=" * 50)
+r = client.chat("Say hello in 5 different languages")
+print(r.response)
+print()
+
+print("=" * 50)
+print("Test 2: Thinking mode")
+print("=" * 50)
+r = client.chat("What is 17 * 23?", thinking=True)
+print("-- Thinking --")
+print(r.thinking_content)
+print()
+print("-- Answer --")
+print(r.response)
+print()
+print("-- full_response (use this in bots) --")
+print(r.full_response)
+print()
+
+print("=" * 50)
+print("Test 3: Web search")
+print("=" * 50)
+r = client.chat("What is today's date?", search=True)
+print(r.response)
+print()
+
+print("=" * 50)
+print("Test 4: Expert model")
+print("=" * 50)
+r = client.chat("What is the square root of 144?", model="expert")
+print(r.response)
+print()
+
+print("=" * 50)
+print("Test 5: Session continuity")
+print("=" * 50)
+r1 = client.chat("My name is Alex")
+r2 = client.chat("What is my name?", session_id=r1.session_id)
+print(r2.response)
+print()
+
+print("=" * 50)
+print("Test 6: Error handling")
+print("=" * 50)
+bad_client = DeepSeekClient(api_key="invalid_token")
+try:
+    bad_client.chat("Hello")
+except DeepSeekAPIError as e:
+    print(f"Caught error correctly: {e}")
+```
+
+---
+
+## Telegram Bot Example
+
+```python
+import asyncio
+from telegram import Update
+from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from deepseek import DeepSeekClient, DeepSeekConnectionError, DeepSeekAPIError
+
+TOKEN = "YOUR_DEEPSEEK_TOKEN"
+BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN"
+
+client = DeepSeekClient(api_key=TOKEN)
+
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_message = update.message.text
+
+    def run():
+        return client.chat(user_message, thinking=True)
+
+    try:
+        response = await asyncio.to_thread(run)
+        await update.message.reply_text(response.full_response)
+    except DeepSeekConnectionError:
+        await update.message.reply_text("Connection error, please try again.")
+    except DeepSeekAPIError as e:
+        await update.message.reply_text(f"Error: {e}")
+
+
+app = ApplicationBuilder().token(BOT_TOKEN).build()
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+app.run_polling()
+```
 
 ---
 
@@ -261,6 +425,7 @@ Every `client.chat()` call returns a `ChatResponse`:
 - Web search slightly increases response time but adds real-time data
 - Thinking mode exposes the model's internal reasoning before the final answer
 - All responses are automatically stripped of HTML tags and citation markers
+- Always use `response.full_response` in bots when thinking is enabled to avoid duplicate messages
 
 ---
 
