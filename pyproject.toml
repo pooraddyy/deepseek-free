@@ -28,8 +28,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/addy/deepseek-free"
-Repository = "https://github.com/addy/deepseek-free"
+Homepage = "https://github.com/pooraddyy/deepseek-free"
+Repository = "https://github.com/pooraddyy/deepseek-free"
 
 [tool.hatch.build.targets.wheel]
 packages = ["deepseek"]
