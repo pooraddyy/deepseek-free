@@ -170,12 +170,18 @@ await message.reply(response.thinking_content)
 await message.reply(response.full_response)
 ```
 
-### Without thinking — use `response`
+### Without thinking — use `full_response`
+
+`full_response` works correctly whether thinking is on or off — always use it in bots.
 
 ```python
 response = client.chat(user_message)  # thinking=False by default
 
-await message.reply(response.response)  # just the clean answer, nothing else
+# WRONG — response.response works but is inconsistent; breaks if you later enable thinking
+await message.reply(response.response)
+
+# CORRECT — full_response returns just the clean answer when thinking=False
+await message.reply(response.full_response)
 ```
 
 ### `full_response` when thinking is disabled
@@ -425,7 +431,7 @@ app.run_polling()
 - Web search slightly increases response time but adds real-time data
 - Thinking mode exposes the model's internal reasoning before the final answer
 - All responses are automatically stripped of HTML tags and citation markers
-- Always use `response.full_response` in bots when thinking is enabled to avoid duplicate messages
+- Always use `response.full_response` in bots — it works correctly whether thinking is enabled or not, and avoids duplicate messages
 
 ---
 
