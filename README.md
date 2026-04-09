@@ -1,4 +1,4 @@
-# deepseek-free
+# p2d-deepseek
 
 <p>
   <a href="https://t.me/pythontodayz">
@@ -15,9 +15,26 @@ Unofficial Python client for DeepSeek. Supports default and expert models with t
 
 ## Installation
 
+**Using pip (recommended):**
+
 ```bash
 pip install p2d-deepseek
 ```
+
+**Upgrade to latest version:**
+
+```bash
+pip install p2d-deepseek --upgrade
+```
+
+**Install specific version:**
+
+```bash
+pip install p2d-deepseek==0.1.0
+```
+
+> **Note:** The PyPI package is named `p2d-deepseek` but the Python import name is `deepseek`.
+> Install with `pip install p2d-deepseek`, then use `from deepseek import DeepSeekClient` in your code.
 
 ---
 
@@ -37,14 +54,6 @@ This is the quickest way if you are on a desktop browser.
 4. In the left sidebar, expand **Local Storage** → click `https://chat.deepseek.com`
 5. Find the key called `userToken`
 6. Copy the **value** field — that is your token
-
-Or paste this directly in the **Console** tab for a one-click copy:
-
-```js
-copy(JSON.parse(localStorage.getItem('userToken')).value)
-```
-
-Your token is now in your clipboard.
 
 ---
 
@@ -68,13 +77,8 @@ Mobile users can extract the token using **Kiwi Browser**, which supports DevToo
 1. Install [Kiwi Browser](https://play.google.com/store/apps/details?id=com.kiwibrowser.browser) from the Play Store
 2. Open [chat.deepseek.com](https://chat.deepseek.com) and log in
 3. Tap the menu (⋮) → **Developer Tools**
-4. Go to the **Console** tab and paste:
-
-```js
-copy(JSON.parse(localStorage.getItem('userToken')).value)
-```
-
-5. The token is copied to your clipboard
+4. Go to the **Application** tab → **Local Storage** → `https://chat.deepseek.com`
+5. Find the key called `userToken` and copy the **value** field
 
 > **Note:** Kiwi Browser is only available on Android. iPhone users can use a laptop or PC with any of the desktop methods above.
 
