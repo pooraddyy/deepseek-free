@@ -21,12 +21,75 @@ pip install deepseek-free
 
 ---
 
-## Getting Your API Key
+## Getting Your Auth Token
 
-1. Open [chat.deepseek.com](https://chat.deepseek.com) in your browser
-2. Open **DevTools** → **Network** tab
-3. Send any message and find a request to `chat.deepseek.com`
-4. Copy the `authorization` header value (starts with `Bearer ...`)
+To use this package, you need your DeepSeek auth token. Choose whichever method suits you best.
+
+---
+
+### Method 1 — LocalStorage (Fastest, Desktop)
+
+This is the quickest way if you are on a desktop browser.
+
+1. Go to [chat.deepseek.com](https://chat.deepseek.com) and log in
+2. Open DevTools — press `F12` or right-click anywhere → **Inspect**
+3. Go to the **Application** tab (if hidden, click `»` to find it)
+4. In the left sidebar, expand **Local Storage** → click `https://chat.deepseek.com`
+5. Find the key called `userToken`
+6. Copy the **value** field — that is your token
+
+Or paste this directly in the **Console** tab for a one-click copy:
+
+```js
+copy(JSON.parse(localStorage.getItem('userToken')).value)
+```
+
+Your token is now in your clipboard.
+
+---
+
+### Method 2 — Network Tab (Desktop)
+
+Use this if the LocalStorage method does not work for you.
+
+1. Go to [chat.deepseek.com](https://chat.deepseek.com) and log in
+2. Open DevTools → **Network** tab
+3. Send any message in the chat
+4. Click on any request going to `chat.deepseek.com`
+5. Open the **Headers** section
+6. Find the `authorization` header and copy its value (without the `Bearer ` prefix)
+
+---
+
+### Method 3 — Kiwi Browser (Android / Mobile)
+
+Mobile users can extract the token using **Kiwi Browser**, which supports DevTools.
+
+1. Install [Kiwi Browser](https://play.google.com/store/apps/details?id=com.kiwibrowser.browser) from the Play Store
+2. Open [chat.deepseek.com](https://chat.deepseek.com) and log in
+3. Tap the menu (⋮) → **Developer Tools**
+4. Go to the **Console** tab and paste:
+
+```js
+copy(JSON.parse(localStorage.getItem('userToken')).value)
+```
+
+5. The token is copied to your clipboard
+
+> **Note:** Kiwi Browser is only available on Android. iPhone users can use a laptop or PC with any of the desktop methods above.
+
+---
+
+### Cloudflare Issues
+
+If you see a **"Just a moment..."** page or requests are being blocked, DeepSeek has triggered a Cloudflare challenge. In this case:
+
+- Try logging out and back in on [chat.deepseek.com](https://chat.deepseek.com)
+- Wait a few minutes, then grab a fresh token
+- If the problem keeps happening, switch to a different network (e.g. mobile data vs Wi-Fi)
+- Avoid making too many requests in a short time — space them out to stay under the radar
+
+> Your token is tied to your session. If DeepSeek logs you out or your session expires, just repeat any of the steps above to get a fresh one.
 
 ---
 
@@ -35,7 +98,7 @@ pip install deepseek-free
 ```python
 from deepseek import DeepSeekClient
 
-client = DeepSeekClient(api_key="Bearer YOUR_TOKEN_HERE")
+client = DeepSeekClient(api_key="YOUR_TOKEN_HERE")
 
 response = client.chat("What is the capital of France?")
 print(response.response)
@@ -70,7 +133,7 @@ print(response.response)
 ```python
 from deepseek import DeepSeekClient
 
-client = DeepSeekClient(api_key="Bearer YOUR_TOKEN_HERE")
+client = DeepSeekClient(api_key="YOUR_TOKEN_HERE")
 
 response = client.chat("Explain quantum computing")
 print(response.response)
@@ -190,10 +253,10 @@ Every `client.chat()` call returns a `ChatResponse`:
 
 ## Notes
 
-- Your auth token expires periodically — refresh it from DevTools if you get auth errors
-- Web search adds live data but may slightly increase response time
-- Thinking mode shows the model's internal reasoning process
-- Responses are automatically cleaned — no HTML tags or citation markers
+- Tokens expire when your DeepSeek session ends — refresh using any method above
+- Web search slightly increases response time but adds real-time data
+- Thinking mode exposes the model's internal reasoning before the final answer
+- All responses are automatically stripped of HTML tags and citation markers
 
 ---
 
