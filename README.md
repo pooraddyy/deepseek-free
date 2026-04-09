@@ -38,11 +38,6 @@ This is the quickest way if you are on a desktop browser.
 5. Find the key called `userToken`
 6. Copy the **value** field — that is your token
 
-Or paste this directly in the **Console** tab for a one-click copy:
-
-```js
-copy(JSON.parse(localStorage.getItem('userToken')).value)
-```
 
 Your token is now in your clipboard.
 
