@@ -30,7 +30,7 @@ pip install p2d-deepseek --upgrade
 **Install specific version:**
 
 ```bash
-pip install p2d-deepseek==0.1.7
+pip install p2d-deepseek==0.1.8
 ```
 
 > **Note:** The PyPI package is named `p2d-deepseek` but the Python import name is `deepseek`.
