@@ -10,6 +10,7 @@ readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "addy" }]
 requires-python = ">=3.9"
+
 keywords = ["deepseek", "ai", "llm", "chatbot", "p2d-deepseek"]
 
 classifiers = [
@@ -30,14 +31,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/addy/deepseek-free"
-Repository = "https://github.com/addy/deepseek-free"
+Homepage = "https://github.com/pooraddyy/deepseek-free"
+Repository = "https://github.com/pooraddyy/deepseek-free"
 
 [tool.hatch.build.targets.wheel]
 packages = ["deepseek"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"deepseek/wasm/sha3_wasm_bg.7b9ca65ddd.wasm" = "deepseek/wasm/sha3_wasm_bg.7b9ca65ddd.wasm"
 
 [tool.hatch.build.targets.sdist]
 include = [
