@@ -63,11 +63,7 @@ Mobile users can extract the token using **Kiwi Browser**, which supports DevToo
 1. Install [Kiwi Browser](https://play.google.com/store/apps/details?id=com.kiwibrowser.browser) from the Play Store
 2. Open [chat.deepseek.com](https://chat.deepseek.com) and log in
 3. Tap the menu (⋮) → **Developer Tools**
-4. Go to the **Console** tab and paste:
-
-```js
-copy(JSON.parse(localStorage.getItem('userToken')).value)
-```
+4. Go to the **Console** Find the `authorization` header and copy its value:
 
 5. The token is copied to your clipboard
 
