@@ -6,7 +6,7 @@
   </a>
   <img src="https://img.shields.io/pypi/v/p2d-deepseek?style=for-the-badge" alt="PyPI Version"/>
   <img src="https://img.shields.io/pypi/pyversions/p2d-deepseek?style=for-the-badge" alt="Python Versions"/>
-  <img src="https://img.shields.io/github/license/addy/deepseek-free?style=for-the-badge" alt="License"/>
+  <img src="https://img.shields.io/github/license/pooraddyy/deepseek-free?style=for-the-badge" alt="License"/>
 </p>
 
 Unofficial Python client for DeepSeek. Supports default and expert models with thinking and web search — no special API needed, just your DeepSeek auth token.
