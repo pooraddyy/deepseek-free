@@ -34,9 +34,6 @@ Repository = "https://github.com/pooraddyy/deepseek-free"
 [tool.hatch.build.targets.wheel]
 packages = ["deepseek"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"deepseek/wasm" = "deepseek/wasm"
-
 [tool.hatch.build.targets.sdist]
 include = [
     "deepseek/**",
