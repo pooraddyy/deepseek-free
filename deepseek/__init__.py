@@ -3,4 +3,4 @@ from .models import ChatResponse
 from .exceptions import DeepSeekConnectionError, DeepSeekAPIError
 
 __all__ = ["DeepSeekClient", "ChatResponse", "DeepSeekConnectionError", "DeepSeekAPIError"]
-__version__ = "0.1.5"
+__version__ = "0.1.4"
