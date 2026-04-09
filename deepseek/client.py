@@ -46,22 +46,14 @@ class DeepSeekClient:
             parent_message_id=parent_message_id,
         )
 
-        raw_answer = result["response"]
-        thinking_content = result.get("thinking_content")
-
-        if thinking and thinking_content:
-            combined_response = f"{thinking_content}\n\n{raw_answer}"
-        else:
-            combined_response = raw_answer
-
         return ChatResponse(
             session_id=session_id,
             message_id=result["message_id"],
-            response=combined_response,
+            response=result["response"],
             model_type=model,
             thinking_enabled=thinking,
             search_enabled=search,
             status=result["status"],
-            thinking_content=thinking_content,
-            answer=raw_answer,
+            thinking_content=result.get("thinking_content"),
+            answer=result["response"],
         )
