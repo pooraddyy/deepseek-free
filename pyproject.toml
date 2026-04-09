@@ -4,15 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "p2d-deepseek"
-version = "0.1.2"
+version = "0.1.3"
 description = "Unofficial Python client for DeepSeek — supports default & expert models, thinking, and web search."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "addy" }]
 requires-python = ">=3.9"
-
 keywords = ["deepseek", "ai", "llm", "chatbot", "p2d-deepseek"]
-
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
@@ -23,7 +21,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
-
 dependencies = [
     "httpx>=0.28.1",
     "numpy>=1.24.0",
@@ -31,14 +28,18 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pooraddyy/deepseek-free"
-Repository = "https://github.com/pooraddyy/deepseek-free"
+Homepage = "https://github.com/addy/deepseek-free"
+Repository = "https://github.com/addy/deepseek-free"
 
 [tool.hatch.build.targets.wheel]
 packages = ["deepseek"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"deepseek/wasm/sha3_wasm_bg.7b9ca65ddd.wasm" = "deepseek/wasm/sha3_wasm_bg.7b9ca65ddd.wasm"
+
 [tool.hatch.build.targets.sdist]
 include = [
+    "deepseek",
     "README.md",
     "pyproject.toml",
     "LICENSE",
