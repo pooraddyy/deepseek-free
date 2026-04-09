@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "p2d-deepseek"
-version = "0.1.7"
+version = "0.1.8"
 description = "Unofficial Python client for DeepSeek — supports default & expert models, thinking, and web search."
 readme = "README.md"
 license = { text = "MIT" }
