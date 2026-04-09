@@ -15,9 +15,10 @@ class ChatResponse:
     search_enabled: bool
     status: str
     thinking_content: Optional[str] = None
+    answer: Optional[str] = None
 
     @property
     def full_response(self) -> str:
         if self.thinking_content:
-            return f"{self.thinking_content}\n\n{self.response}"
+            return f"{self.thinking_content}\n\n{self.answer or self.response}"
         return self.response
