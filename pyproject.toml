@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "p2d-deepseek"
-version = "0.1.8"
-description = "Unofficial Python client for DeepSeek — supports default & expert models, thinking, and web search."
+version = "0.1.9"
+description = "Unofficial Python client for DeepSeek — supports default & expert models, thinking, web search, and file/image uploads."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [{ name = "addy" }]
@@ -35,7 +35,7 @@ Repository = "https://github.com/addy/deepseek-free"
 packages = ["deepseek"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"deepseek/wasm/sha3_wasm_bg.7b9ca65ddd.wasm" = "deepseek/wasm/sha3_wasm_bg.7b9ca65ddd.wasm"
+"deepseek/pow/wasm/sha3_wasm_bg.7b9ca65ddd.wasm" = "deepseek/pow/wasm/sha3_wasm_bg.7b9ca65ddd.wasm"
 
 [tool.hatch.build.targets.sdist]
 include = [
