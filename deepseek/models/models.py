@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, Literal
 
-ModelType = Literal["default", "expert", "vision", "deepseek-v4-flash", "deepseek-v4-pro"]
+ModelType = Literal["deepseek-v4-flash", "deepseek-v4-pro"]
 
 MODEL_ALIASES: dict = {
     "deepseek-v4-flash": "default",
