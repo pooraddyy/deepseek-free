@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/github/license/pooraddyy/deepseek-free?style=for-the-badge" alt="License"/>
 </p>
 
-Unofficial Python client for DeepSeek. Supports **deepseek-v4-flash**, **deepseek-v4-pro**, default and expert models with thinking, web search, and **file/image uploads** — no special API needed, just your DeepSeek auth token.
+Unofficial Python client for DeepSeek. Supports **deepseek-v4-flash** and **deepseek-v4-pro** with thinking, web search, and **file/image uploads** — no special API needed, just your DeepSeek auth token.
 
 ---
 
@@ -30,7 +30,7 @@ pip install p2d-deepseek --upgrade
 **Install specific version:**
 
 ```bash
-pip install p2d-deepseek==0.2.0
+pip install p2d-deepseek==0.2.1
 ```
 
 > **Note:** The PyPI package is named `p2d-deepseek` but the Python import name is `deepseek`.
@@ -106,15 +106,10 @@ print(response.response)
 
 ## Models
 
-| Model | Alias For | Description |
-|-------|-----------|-------------|
-| `deepseek-v4-flash` | `default` | Fast, general purpose model — **default** |
-| `deepseek-v4-pro` | `expert` | Pro model — deeper reasoning, more detailed answers |
-| `default` | — | Standard DeepSeek model — fast, general purpose |
-| `expert` | — | Expert model — deeper reasoning, more detailed answers |
-| `vision` | — | Vision model — for image understanding |
-
-> `deepseek-v4-flash` and `deepseek-v4-pro` are aliases — they resolve to `default` and `expert` respectively before being sent to the API.
+| Model | Description |
+|-------|-------------|
+| `deepseek-v4-flash` | Fast, general purpose model — **default** |
+| `deepseek-v4-pro` | Pro model — deeper reasoning, more detailed answers |
 
 ---
 
@@ -122,7 +117,7 @@ print(response.response)
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
-| `model` | `str` | `"deepseek-v4-flash"` | Model to use: `"deepseek-v4-flash"`, `"deepseek-v4-pro"`, `"default"`, `"expert"`, or `"vision"` |
+| `model` | `str` | `"deepseek-v4-flash"` | Model to use: `"deepseek-v4-flash"` or `"deepseek-v4-pro"` |
 | `thinking` | `bool` | `False` | Enable chain-of-thought reasoning |
 | `search` | `bool` | `False` | Enable live web search |
 | `session_id` | `str` | `None` | Reuse an existing chat session |
@@ -287,7 +282,7 @@ DeepSeek accepts a wide range of files. Common ones that work out of the box:
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `file_path` | `str` | required | Local path to the file |
-| `model` | `str` | `"default"` | Model that will use the file (just affects upload allocation) |
+| `model` | `str` | `"deepseek-v4-flash"` | Model that will use the file (just affects upload allocation) |
 | `thinking` | `bool` | `False` | Whether the upload should be flagged for thinking-mode usage |
 | `poll_interval` | `float` | `1.0` | Seconds between status checks while DeepSeek parses the file |
 | `timeout` | `float` | `120.0` | Maximum seconds to wait for parsing before erroring out |
@@ -312,7 +307,7 @@ print(r2.response)  # "Your name is Alex."
 
 ## Usage Examples
 
-### Basic — default model
+### Basic — deepseek-v4-flash (default)
 
 ```python
 from deepseek import DeepSeekClient
@@ -323,32 +318,12 @@ response = client.chat("Explain quantum computing")
 print(response.response)
 ```
 
-### deepseek-v4-flash (default)
-
-```python
-response = client.chat(
-    "Explain quantum computing",
-    model="deepseek-v4-flash"
-)
-print(response.response)
-```
-
 ### deepseek-v4-pro
 
 ```python
 response = client.chat(
     "Solve this integral: ∫x²dx",
     model="deepseek-v4-pro"
-)
-print(response.response)
-```
-
-### Expert model
-
-```python
-response = client.chat(
-    "Solve this integral: ∫x²dx",
-    model="expert"
 )
 print(response.response)
 ```
@@ -420,17 +395,6 @@ response = client.chat(
 print(response.full_response)
 ```
 
-### Expert + thinking
-
-```python
-response = client.chat(
-    "Prove that sqrt(2) is irrational",
-    model="expert",
-    thinking=True
-)
-print(response.full_response)
-```
-
 ### deepseek-v4-pro + web search
 
 ```python
@@ -442,18 +406,7 @@ response = client.chat(
 print(response.response)
 ```
 
-### Expert + web search
-
-```python
-response = client.chat(
-    "Latest AI research papers in 2025",
-    model="expert",
-    search=True
-)
-print(response.response)
-```
-
-### Default + thinking + web search
+### deepseek-v4-flash + thinking + web search
 
 ```python
 response = client.chat(
@@ -464,12 +417,12 @@ response = client.chat(
 print(response.full_response)
 ```
 
-### Expert + thinking + web search (all enabled)
+### deepseek-v4-pro + thinking + web search (all enabled)
 
 ```python
 response = client.chat(
     "Analyze the current state of AI regulation globally",
-    model="expert",
+    model="deepseek-v4-pro",
     thinking=True,
     search=True
 )
@@ -520,7 +473,7 @@ A complete, production-ready bot that supports **every feature** of `p2d-deepsee
 - Document uploads (PDFs, code, spreadsheets, etc.)
 - `/think on|off` — toggle reasoning mode
 - `/search on|off` — toggle live web search
-- `/model default|expert` — switch model
+- `/model deepseek-v4-flash|deepseek-v4-pro` — switch model
 - `/reset` — start a new conversation
 - `/status` — show current settings
 - `/start`, `/help`
@@ -556,7 +509,7 @@ client = DeepSeekClient(api_key=DEEPSEEK_TOKEN)
 
 DEFAULT_STATE = {
     "session_id": None,
-    "model": "default",
+    "model": "deepseek-v4-flash",
     "thinking": False,
     "search": False,
 }
@@ -594,7 +547,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Commands:\n"
         "/think on|off — toggle thinking mode\n"
         "/search on|off — toggle web search\n"
-        "/model default|expert — switch model\n"
+        "/model deepseek-v4-flash|deepseek-v4-pro — switch model\n"
         "/reset — start a new conversation\n"
         "/status — show current settings\n"
         "/help — show this message"
@@ -629,7 +582,7 @@ async def cmd_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Web search: {'ON' if s['search'] else 'OFF'}")
 
 
-VALID_MODELS = {"default", "expert", "vision", "deepseek-v4-flash", "deepseek-v4-pro"}
+VALID_MODELS = {"deepseek-v4-flash", "deepseek-v4-pro"}
 
 async def cmd_model(update: Update, context: ContextTypes.DEFAULT_TYPE):
     s = get_state(update.effective_user.id)
@@ -641,10 +594,7 @@ async def cmd_model(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Usage: /model <name>\n\n"
             "Available models:\n"
             "  deepseek-v4-flash — fast, general purpose (default)\n"
-            "  deepseek-v4-pro   — deeper reasoning\n"
-            "  default           — same as deepseek-v4-flash\n"
-            "  expert            — same as deepseek-v4-pro\n"
-            "  vision            — image understanding"
+            "  deepseek-v4-pro   — deeper reasoning"
         )
 
 
