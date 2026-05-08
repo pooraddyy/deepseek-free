@@ -1,7 +1,7 @@
 import time
 from typing import Optional, Dict, List
 
-from .models import ChatResponse, ModelType
+from .models import ChatResponse, ModelType, resolve_model
 from .session import create_session, create_pow_challenge
 from .chat import send_message
 from .files import upload_file as _upload_file_http, fetch_files as _fetch_files_http
@@ -31,7 +31,7 @@ class DeepSeekClient:
     def upload_file(
         self,
         file_path: str,
-        model: ModelType = "default",
+        model: ModelType = "deepseek-v4-flash",
         thinking: bool = False,
         poll_interval: float = 1.0,
         timeout: float = 120.0,
@@ -42,7 +42,7 @@ class DeepSeekClient:
             file_path=file_path,
             pow_response=pow_response,
             session_cookie=session_cookie,
-            model_type=model,
+            model_type=resolve_model(model),
             thinking_enabled=thinking,
         )
         file_id = result["id"]
@@ -71,7 +71,7 @@ class DeepSeekClient:
     def chat(
         self,
         prompt: str,
-        model: ModelType = "default",
+        model: ModelType = "deepseek-v4-flash",
         thinking: bool = False,
         search: bool = False,
         session_id: Optional[str] = None,
@@ -100,7 +100,7 @@ class DeepSeekClient:
             prompt=prompt,
             pow_response=pow_response,
             session_cookie=session_cookie,
-            model_type=model,
+            model_type=resolve_model(model),
             thinking_enabled=thinking,
             search_enabled=search,
             parent_message_id=parent_message_id,
