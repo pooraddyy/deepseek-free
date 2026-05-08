@@ -1,7 +1,16 @@
 from dataclasses import dataclass
 from typing import Optional, Literal
 
-ModelType = Literal["default", "expert"]
+ModelType = Literal["default", "expert", "vision", "deepseek-v4-flash", "deepseek-v4-pro"]
+
+MODEL_ALIASES: dict = {
+    "deepseek-v4-flash": "default",
+    "deepseek-v4-pro": "expert",
+}
+
+
+def resolve_model(model: str) -> str:
+    return MODEL_ALIASES.get(model, model)
 
 
 @dataclass
