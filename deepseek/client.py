@@ -1,9 +1,12 @@
+import json
+import re
 import time
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Iterator
 
 from .models import ChatResponse, ModelType, resolve_model
 from .session import create_session, create_pow_challenge
-from .chat import send_message
+from .chat import send_message, send_message_stream
+from .common.common import is_junk
 from .files import upload_file as _upload_file_http, fetch_files as _fetch_files_http
 from .pow import solve_pow
 from .exceptions import DeepSeekAPIError
@@ -122,3 +125,87 @@ class DeepSeekClient:
             thinking_content=result.get("thinking_content"),
             answer=result["response"],
         )
+
+    def chat_stream(
+        self,
+        prompt: str,
+        model: ModelType = "deepseek-v4-flash",
+        thinking: bool = False,
+        search: bool = False,
+        session_id: Optional[str] = None,
+        parent_message_id: Optional[int] = None,
+        file_ids: Optional[List[str]] = None,
+    ) -> Iterator[str]:
+        if not session_id:
+            session_data = create_session(self.api_key)
+            session_id = session_data["session_id"]
+
+        if parent_message_id is None:
+            parent_message_id = self._last_message_id.get(session_id)
+
+        pow_response, session_cookie = self._solve_challenge("/api/v0/chat/completion")
+
+        current_type = "RESPONSE"
+
+        for line in send_message_stream(
+            authorization=self.api_key,
+            chat_session_id=session_id,
+            prompt=prompt,
+            pow_response=pow_response,
+            session_cookie=session_cookie,
+            model_type=resolve_model(model),
+            thinking_enabled=thinking,
+            search_enabled=search,
+            parent_message_id=parent_message_id,
+            ref_file_ids=file_ids or None,
+        ):
+            if not line or line.startswith("event:"):
+                continue
+            if not line.startswith("data:"):
+                continue
+            raw = line[5:].strip()
+            if not raw:
+                continue
+            try:
+                chunk = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+
+            path = chunk.get("p", "")
+            val = chunk.get("v")
+            op = chunk.get("o", "APPEND")
+
+            if re.match(r"response/fragments/\d+/type$", path) and isinstance(val, str):
+                if val in ("THINK", "THINKING"):
+                    current_type = "THINK"
+                elif val == "RESPONSE":
+                    current_type = "RESPONSE"
+                continue
+
+            if re.match(r"response/fragments/-?\d+/content$", path) and isinstance(val, str):
+                if not is_junk(val) and current_type == "RESPONSE":
+                    yield val
+                continue
+
+            if path == "response/fragments" and op == "APPEND" and isinstance(val, list):
+                for frag in val:
+                    ftype = frag.get("type", "")
+                    if ftype in ("THINK", "THINKING"):
+                        current_type = "THINK"
+                    elif ftype == "RESPONSE":
+                        current_type = "RESPONSE"
+                    content = frag.get("content", "")
+                    if content and not is_junk(content) and current_type == "RESPONSE":
+                        yield content
+                continue
+
+            if "p" not in chunk and isinstance(val, dict) and "response" in val:
+                for frag in val["response"].get("fragments", []):
+                    ftype = frag.get("type", "")
+                    if ftype in ("THINK", "THINKING"):
+                        current_type = "THINK"
+                    elif ftype == "RESPONSE":
+                        current_type = "RESPONSE"
+                    content = frag.get("content", "")
+                    if content and not is_junk(content) and current_type == "RESPONSE":
+                        yield content
