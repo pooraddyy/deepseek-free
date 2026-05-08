@@ -30,7 +30,7 @@ pip install p2d-deepseek --upgrade
 **Install specific version:**
 
 ```bash
-pip install p2d-deepseek==0.2.1
+pip install p2d-deepseek==0.2.2
 ```
 
 > **Note:** The PyPI package is named `p2d-deepseek` but the Python import name is `deepseek`.
@@ -288,6 +288,44 @@ DeepSeek accepts a wide range of files. Common ones that work out of the box:
 | `timeout` | `float` | `120.0` | Maximum seconds to wait for parsing before erroring out |
 
 Returns: the `file_id` string (e.g. `"file-a7be4dc1-07b8-4911-b98a-02e79266ca7d"`) once status is `SUCCESS`.
+
+---
+
+## Streaming
+
+Use `chat_stream()` to receive the response word-by-word as it is generated — useful for CLI tools, Telegram bots, and live UIs.
+
+```python
+from deepseek import DeepSeekClient
+
+client = DeepSeekClient(api_key="YOUR_TOKEN_HERE")
+
+for chunk in client.chat_stream("Explain black holes in simple words"):
+    print(chunk, end="", flush=True)
+print()
+```
+
+### With deepseek-v4-pro
+
+```python
+for chunk in client.chat_stream("Prove that sqrt(2) is irrational", model="deepseek-v4-pro"):
+    print(chunk, end="", flush=True)
+print()
+```
+
+### `chat_stream()` parameters
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `prompt` | `str` | required | Your message |
+| `model` | `str` | `"deepseek-v4-flash"` | `"deepseek-v4-flash"` or `"deepseek-v4-pro"` |
+| `thinking` | `bool` | `False` | Enable chain-of-thought reasoning (thinking chunks are skipped, only final answer is streamed) |
+| `search` | `bool` | `False` | Enable live web search |
+| `session_id` | `str` | `None` | Reuse an existing session |
+| `parent_message_id` | `int` | `None` | Override the parent message |
+| `file_ids` | `list[str]` | `None` | Already-uploaded file IDs to attach |
+
+> `chat_stream()` yields only the final answer chunks. Thinking content is not streamed. Use `chat()` if you need the full `ChatResponse` object with thinking content, message ID, etc.
 
 ---
 
