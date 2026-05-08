@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/github/license/pooraddyy/deepseek-free?style=for-the-badge" alt="License"/>
 </p>
 
-Unofficial Python client for DeepSeek. Supports default and expert models with thinking, web search, and **file/image uploads** — no special API needed, just your DeepSeek auth token.
+Unofficial Python client for DeepSeek. Supports **deepseek-v4-flash**, **deepseek-v4-pro**, default and expert models with thinking, web search, and **file/image uploads** — no special API needed, just your DeepSeek auth token.
 
 ---
 
@@ -30,7 +30,7 @@ pip install p2d-deepseek --upgrade
 **Install specific version:**
 
 ```bash
-pip install p2d-deepseek==0.1.9
+pip install p2d-deepseek==0.2.0
 ```
 
 > **Note:** The PyPI package is named `p2d-deepseek` but the Python import name is `deepseek`.
@@ -106,10 +106,15 @@ print(response.response)
 
 ## Models
 
-| Model | Description |
-|-------|-------------|
-| `default` | Standard DeepSeek model — fast, general purpose |
-| `expert` | Expert model — deeper reasoning, more detailed answers |
+| Model | Alias For | Description |
+|-------|-----------|-------------|
+| `deepseek-v4-flash` | `default` | Fast, general purpose model — **default** |
+| `deepseek-v4-pro` | `expert` | Pro model — deeper reasoning, more detailed answers |
+| `default` | — | Standard DeepSeek model — fast, general purpose |
+| `expert` | — | Expert model — deeper reasoning, more detailed answers |
+| `vision` | — | Vision model — for image understanding |
+
+> `deepseek-v4-flash` and `deepseek-v4-pro` are aliases — they resolve to `default` and `expert` respectively before being sent to the API.
 
 ---
 
@@ -117,7 +122,7 @@ print(response.response)
 
 | Flag | Type | Default | Description |
 |------|------|---------|-------------|
-| `model` | `str` | `"default"` | Model to use: `"default"` or `"expert"` |
+| `model` | `str` | `"deepseek-v4-flash"` | Model to use: `"deepseek-v4-flash"`, `"deepseek-v4-pro"`, `"default"`, `"expert"`, or `"vision"` |
 | `thinking` | `bool` | `False` | Enable chain-of-thought reasoning |
 | `search` | `bool` | `False` | Enable live web search |
 | `session_id` | `str` | `None` | Reuse an existing chat session |
@@ -139,7 +144,7 @@ Every `client.chat()` call returns a `ChatResponse` object with these fields:
 | `answer` | `str` | Same as `response` — clean final answer only |
 | `session_id` | `str` | Session ID — use to continue conversations |
 | `message_id` | `int` | Message ID in the session |
-| `model_type` | `str` | Model used (`default` or `expert`) |
+| `model_type` | `str` | Model used as passed by the caller (e.g. `deepseek-v4-flash`, `expert`) |
 | `thinking_enabled` | `bool` | Whether thinking was enabled |
 | `search_enabled` | `bool` | Whether web search was enabled |
 | `status` | `str` | Response status from DeepSeek |
@@ -318,6 +323,26 @@ response = client.chat("Explain quantum computing")
 print(response.response)
 ```
 
+### deepseek-v4-flash (default)
+
+```python
+response = client.chat(
+    "Explain quantum computing",
+    model="deepseek-v4-flash"
+)
+print(response.response)
+```
+
+### deepseek-v4-pro
+
+```python
+response = client.chat(
+    "Solve this integral: ∫x²dx",
+    model="deepseek-v4-pro"
+)
+print(response.response)
+```
+
 ### Expert model
 
 ```python
@@ -384,6 +409,17 @@ r2 = client.chat("Which column has the highest variance?", file_ids=[file_id], s
 r3 = client.chat("Suggest 3 charts to visualise it", file_ids=[file_id], session_id=r1.session_id)
 ```
 
+### deepseek-v4-pro + thinking
+
+```python
+response = client.chat(
+    "Prove that sqrt(2) is irrational",
+    model="deepseek-v4-pro",
+    thinking=True
+)
+print(response.full_response)
+```
+
 ### Expert + thinking
 
 ```python
@@ -393,6 +429,17 @@ response = client.chat(
     thinking=True
 )
 print(response.full_response)
+```
+
+### deepseek-v4-pro + web search
+
+```python
+response = client.chat(
+    "Latest AI research papers in 2025",
+    model="deepseek-v4-pro",
+    search=True
+)
+print(response.response)
 ```
 
 ### Expert + web search
@@ -582,13 +629,23 @@ async def cmd_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Web search: {'ON' if s['search'] else 'OFF'}")
 
 
+VALID_MODELS = {"default", "expert", "vision", "deepseek-v4-flash", "deepseek-v4-pro"}
+
 async def cmd_model(update: Update, context: ContextTypes.DEFAULT_TYPE):
     s = get_state(update.effective_user.id)
-    if context.args and context.args[0].lower() in {"default", "expert"}:
+    if context.args and context.args[0].lower() in VALID_MODELS:
         s["model"] = context.args[0].lower()
         await update.message.reply_text(f"Model set to: {s['model']}")
     else:
-        await update.message.reply_text("Usage: /model default | expert")
+        await update.message.reply_text(
+            "Usage: /model <name>\n\n"
+            "Available models:\n"
+            "  deepseek-v4-flash — fast, general purpose (default)\n"
+            "  deepseek-v4-pro   — deeper reasoning\n"
+            "  default           — same as deepseek-v4-flash\n"
+            "  expert            — same as deepseek-v4-pro\n"
+            "  vision            — image understanding"
+        )
 
 
 async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
