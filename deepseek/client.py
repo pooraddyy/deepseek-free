@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 import time
 from typing import Optional, Dict, List, Iterator
@@ -10,6 +11,8 @@ from .common.common import is_junk
 from .files import upload_file as upload_file_http, fetch_files as fetch_files_http
 from .pow import solve_pow
 from .exceptions import DeepSeekAPIError
+
+logger = logging.getLogger(__name__)
 
 
 class DeepSeekClient:
@@ -50,22 +53,30 @@ class DeepSeekClient:
         file_id = result["id"]
         return self.wait_for_file(file_id, poll_interval=poll_interval, timeout=timeout)
 
-    def wait_for_file(self, file_id: str, poll_interval: float = 1.0, timeout: float = 120.0) -> str:
+    def wait_for_file(self, file_id: str, poll_interval: float = 1.0, timeout: float = 60.0) -> str:
         deadline = time.time() + timeout
         while time.time() < deadline:
             files = fetch_files_http(self.api_key, [file_id])
             if not files:
-                raise RuntimeError(f"File {file_id} not found")
+                raise DeepSeekAPIError(f"File not found after upload: {file_id}")
             f = files[0]
-            status = f.get("status")
-            if status == "SUCCESS":
+            status = (
+                f.get("status")
+                or f.get("parse_status")
+                or f.get("file_status")
+                or f.get("state")
+                or ""
+            )
+            error_code = f.get("error_code") or f.get("parse_error_code")
+            logger.debug("File %s poll: status=%r keys=%s", file_id, status, list(f.keys()))
+            if status.upper() in ("SUCCESS", "DONE", "READY", "COMPLETED"):
                 return file_id
-            if status == "FAILED" or f.get("error_code"):
+            if status.upper() in ("FAILED", "ERROR") or error_code:
                 raise DeepSeekAPIError(
-                    f"File upload failed for {f.get('file_name')}: {f.get('error_code') or 'unknown error'}"
+                    f"File processing failed for {f.get('file_name', file_id)}: {error_code or status or 'unknown error'}"
                 )
             time.sleep(poll_interval)
-        raise DeepSeekAPIError(f"File parsing timed out after {timeout}s for {file_id}")
+        raise DeepSeekAPIError(f"File processing timed out after {timeout}s for {file_id}")
 
     def fetch_files(self, file_ids: List[str]) -> List[dict]:
         return fetch_files_http(self.api_key, file_ids)
